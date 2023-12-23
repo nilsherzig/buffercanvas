@@ -1,0 +1,47 @@
+html {
+  background-color: #09090b !important;
+  color: #e4e4e7;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.editor-container {
+  display: flex;
+  width: 100%;
+  margin-bottom: 1em;
+}
+
+.CodeMirror {
+  height: fit-content !important;
+}
+
+.CodeMirror,
+.markdown-preview {
+  font-size: 18px;
+  padding-left: 1em;
+  padding-right: 1em;
+  flex-grow: 1;
+  width: 45%;
+  /* Erlaubt dem Element, den verfügbaren Platz zu füllen */
+  /* Beide nehmen gleichen Platz ein, falls beide vorhanden sind */
+  min-width: 0;
+  /* Verhindert Überlaufen */
+}
+
+#statusBar {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #14532d;
+  text-align: left;
+  padding: 4px;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
+  font-size: 0.75rem;
+}
+
+#editors {
+  margin-bottom: 3rem;
+}

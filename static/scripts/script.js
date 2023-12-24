@@ -111,6 +111,7 @@ function addNewCodeBlock(uuid = null, content = '') {
   });
   editor.id = editorId;
   editor.setValue(content)
+  editor.autoLanguageDetection = true
 
   editor.on('change', function(cm) {
     const code = editor.getValue();
@@ -121,13 +122,16 @@ function addNewCodeBlock(uuid = null, content = '') {
     }
 
     debouncedSave(editorId, code);
-    debouncedUpdateEditorMode(cm);
+    if (editor.autoLanguageDetection) {
+      debouncedUpdateEditorMode(cm);
+    }
 
   });
   editors[editorId] = editor;
   setupFocusListener(editorId);
   addDeleteListener(editorId, editor);
   addCursorMovementListener(editorId, editor); // Fügen Sie den Event-Listener hinzu
+  addCursorCenteringListener(editor); // Fügen Sie den Event-Listener hinzu
   editor.focus();
   updateStatusBar(editor.getOption("mode")); // Aktualisiert die Statusleiste
 
@@ -167,8 +171,8 @@ function setupFocusListener(editorId) {
   var editor = editors[editorId];
   if (editor) {
     editor.on("focus", function() {
-      const wrapperElement = editor.getWrapperElement();
-      wrapperElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // const wrapperElement = editor.getWrapperElement();
+      // wrapperElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       focusedEditorId = editorId;
       updateStatusBar(editor.getOption("mode")); // Aktualisiert die Statusleiste
     });
@@ -179,24 +183,30 @@ function updateStatusBar(language) {
   document.getElementById('currentLanguage').textContent = language;
 }
 
-function loadBuffersFromLocalStorage() {
-
+async function loadBuffersFromLocalStorage() {
   const editorIds = JSON.parse(localStorage.getItem('editorIds')) || [];
+  console.log(editorIds);
   if (editorIds.length === 0) {
     addNewCodeBlock(); // Fügt einen neuen Editor hinzu, falls keine gespeichert sind
   } else {
-    editorIds.forEach(id => {
-      fetch(`http://localhost:3000/api/load/${id}`)
-        .then(response => response.text())
-        .then(code => addNewCodeBlock(id, code))
-        .catch(error => console.error('Error:', error));
-    });
+    for (const id of editorIds) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/load/${id}`);
+        const code = await response.text();
+        addNewCodeBlock(id, code);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
   }
 }
+
 
 document.addEventListener('DOMContentLoaded', function() {
   loadBuffersFromLocalStorage();
   updateStatusBar('None'); // Initialisiert die Statusleiste
+  // console.log(Object.values(editors)[0]);
+  // Object.values(editors)[0].focus(); 
 });
 
 function loadAndCreateEditor(uuid) {
@@ -280,6 +290,10 @@ function removeFromLocalStorage(editorId) {
 
 function addCursorMovementListener(editorId, editor) {
   editor.on('keydown', function(cm, event) {
+    if (cm.getOption('keyMap').startsWith('vim') && cm.state.vim?.insertMode) {
+      return;
+    }
+
     const keyCode = event.keyCode;
     const cursor = cm.getCursor();
     const lineCount = cm.lineCount();
@@ -294,11 +308,13 @@ function addCursorMovementListener(editorId, editor) {
   });
 }
 
+
 function focusNextEditor(currentEditorId) {
   const editorIds = JSON.parse(localStorage.getItem('editorIds')) || [];
   const currentIndex = editorIds.indexOf(currentEditorId);
   if (currentIndex >= 0 && currentIndex < editorIds.length - 1) {
     editors[editorIds[currentIndex + 1]].focus();
+    centerCursor(editors[editorIds[currentIndex + 1]]);
   }
 }
 
@@ -306,7 +322,13 @@ function focusPreviousEditor(currentEditorId) {
   const editorIds = JSON.parse(localStorage.getItem('editorIds')) || [];
   const currentIndex = editorIds.indexOf(currentEditorId);
   if (currentIndex > 0) {
-    editors[editorIds[currentIndex - 1]].focus();
+    const prevEditorId = editorIds[currentIndex - 1];
+    const prevEditor = editors[prevEditorId];
+
+    const lastLine = prevEditor.lineCount() - 1;
+    prevEditor.setCursor({ line: lastLine, ch: 0 }); // Setzt den Cursor an den Anfang der letzten Zeile
+    prevEditor.focus();
+    // centerCursor(prevEditor);
   }
 }
 
@@ -333,4 +355,45 @@ function copyToClipboard(text) {
   textarea.select();
   document.execCommand('copy');
   document.body.removeChild(textarea);
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.ctrlKey && event.key === 'l') {
+    event.preventDefault(); // Verhindern des Standardverhaltens von Ctrl+L
+    const currentEditor = getCurrentFocusedEditor();
+    if (currentEditor) {
+      selectLanguage(currentEditor);
+    }
+  }
+});
+
+function selectLanguage(editor) {
+  const language = prompt("Bitte Sprache eingeben (z.B. 'javascript', 'python'):");
+  if (language) {
+    editor.autoLanguageDetection = false
+    changeLanguage(focusedEditorId, language);
+  }
+}
+
+function centerCursor(cm) {
+  const cursorPos = cm.cursorCoords(true, 'window');
+  const cursorVerticalPosition = cursorPos.top;
+
+  const windowHeight = window.innerHeight;
+
+  if (cursorVerticalPosition + 100 < windowHeight / 2) {
+    window.scrollTo({ left: 0, top: window.scrollY + cursorVerticalPosition + 100 - windowHeight / 2, behavior: "smooth" });
+  }
+  if (cursorVerticalPosition - 100 > windowHeight / 2) {
+    window.scrollTo({ left: 0, top: window.scrollY + cursorVerticalPosition - 100 - windowHeight / 2, behavior: "smooth" });
+  }
+
+}
+
+function addCursorCenteringListener(editor) {
+  editor.on('cursorActivity', function(cm) {
+    setTimeout(() => {
+      centerCursor(cm);
+    }, 0);
+  });
 }

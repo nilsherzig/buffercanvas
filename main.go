@@ -49,6 +49,7 @@ func saveCodeHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		_, err = db.Exec("INSERT INTO code_blocks (id, code, mode) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET code = ?, mode = ?", codeData.ID, codeData.Code, codeData.Mode, codeData.Code, codeData.Mode)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -73,7 +74,7 @@ func main() {
 	})
 
 	go func() {
-		ticker := time.NewTicker(30 * time.Second) // Passt das Intervall nach Bedarf an
+		ticker := time.NewTicker(10 * time.Minute) // Passt das Intervall nach Bedarf an
 		for {
 			select {
 			case <-ticker.C:

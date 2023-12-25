@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { basicSetup } from 'codemirror';
 	import { EditorView, keymap } from '@codemirror/view';
-	import { Vim, vim, getCM } from '@replit/codemirror-vim';
+	import { vim, getCM } from '@replit/codemirror-vim';
 	import { EditorState } from '@codemirror/state';
 
 	export let editorContent: string;
@@ -50,7 +50,7 @@
 			run: (view) => navigateEditors(view, 'k'),
 			preventDefault: false
 		}
-		// ...defaultKeymap // Fügt die Standard-Keymap hinzu, um alle anderen Funktionen beizubehalten
+		// ...defaultKeymap
 	]);
 
 	function navigateEditors(view: EditorView, key: string) {
@@ -61,10 +61,10 @@
 
 		if (!isVimInsertMode(view) && isAtStartOrEnd) {
 			switchFocus(id, key);
-			return true; // Gibt an, dass das Event gehandhabt wurde
+			return true;
 		}
 
-		return false; // Gibt an, dass das Event nicht gehandhabt wurde und die Standardaktion ausgeführt werden soll
+		return false;
 	}
 </script>
 

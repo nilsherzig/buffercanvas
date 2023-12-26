@@ -16,6 +16,7 @@
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@tailwindcss/typography": "^0.5.10",
 		"@types/eslint": "8.56.0",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
@@ -35,7 +36,18 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@codemirror/lang-markdown": "^6.2.3",
+		"@codemirror/language": "^6.9.3",
+		"@codemirror/legacy-modes": "^6.3.3",
+		"@monaco-editor/loader": "^1.4.0",
 		"@replit/codemirror-vim": "^6.1.0",
-		"codemirror": "^6.0.1"
+		"cm6-theme-nord": "^0.2.0",
+		"codemirror": "^6.0.1",
+		"katex": "^0.16.9",
+		"marked": "^11.1.0",
+		"mathjax": "^3.2.2",
+		"mermaid": "^10.6.1",
+		"monaco-editor": "^0.45.0",
+		"monaco-vim": "^0.4.1"
 	}
 }

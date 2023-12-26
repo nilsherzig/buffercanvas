@@ -93,7 +93,7 @@ function updateEditorMode(editor) {
   changeLanguage(editor.id, language);
 }
 
-function addNewCodeBlock(uuid = null, content = "") {
+function addNewCodeBlock(uuid = null, content = "", mode = null) {
   const editorId = uuid || generateUUID();
   const container = document.createElement("div");
   container.className = "editor-container";
@@ -106,14 +106,23 @@ function addNewCodeBlock(uuid = null, content = "") {
   const editor = CodeMirror.fromTextArea(editorElement, {
     lineNumbers: true,
     keyMap: "vim",
-    // height: 'auto',
     theme: "material-ocean",
     autofocus: "false",
   });
 
   editor.id = editorId;
   editor.setValue(content);
-  editor.autoLanguageDetection = true;
+
+  if (mode == null) {
+    editor.autoLanguageDetection = true;
+  } else {
+    editor.autoLanguageDetection = false;
+    changeLanguage(editor.id, mode);
+  }
+
+  if (editor.getMode().name === "markdown") {
+    updateMarkdownPreview(editor.id, editor.getValue());
+  }
 
   editor.on("change", function(cm) {
     const code = editor.getValue();
@@ -124,6 +133,7 @@ function addNewCodeBlock(uuid = null, content = "") {
     }
 
     debouncedSave(editorId, code);
+
     if (editor.autoLanguageDetection) {
       debouncedUpdateEditorMode(cm);
     }
@@ -141,7 +151,6 @@ function addNewCodeBlock(uuid = null, content = "") {
   if (!uuid) {
     saveEditorIdsInLocalStorage(editorId); // Speichern der UUID im Local Storage
   }
-  updateEditorMode(editor, editorId);
 }
 
 
@@ -187,24 +196,6 @@ function updateStatusBar(language) {
   document.getElementById("currentLanguage").textContent = language;
 }
 
-async function loadBuffersFromLocalStorage() {
-  const editorIds = JSON.parse(localStorage.getItem("editorIds")) || [];
-  console.log(editorIds);
-  if (editorIds.length === 0) {
-    addNewCodeBlock(); // Fügt einen neuen Editor hinzu, falls keine gespeichert sind
-  } else {
-    for (const id of editorIds) {
-      try {
-        const response = await fetch(`http://localhost:3000/api/load/${id}`);
-        const code = await response.text();
-        addNewCodeBlock(id, code);
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
-  }
-}
-
 document.addEventListener("DOMContentLoaded", function() {
   loadBuffersFromLocalStorage();
   updateStatusBar("None"); // Initialisiert die Statusleiste
@@ -213,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function loadAndCreateEditor(uuid) {
-  fetch(`http://localhost:3000/api/load/${uuid}`)
+  fetch(`/api/load/${uuid}`)
     .then((response) => response.text())
     .then((code) => {
       console.log(code);
@@ -245,7 +236,7 @@ function addDeleteListener(editorId, editor) {
 }
 
 function deleteCodeBlock(editorId) {
-  fetch(`http://localhost:3000/api/delete/${editorId}`, { method: "DELETE" })
+  fetch(`/api/delete/${editorId}`, { method: "DELETE" })
     .then((response) => response.text())
     .then((result) => console.log(result))
     .catch((error) => console.error("Error:", error));
@@ -270,7 +261,7 @@ function saveAndShareCurrentEditor() {
   const mode = editors[editorId].getMode().name;
 
   // Speichern des aktuellen Codeblocks
-  fetch("http://localhost:3000/api/save", {
+  fetch("/api/save", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: editorId, code: code, mode: mode }),
@@ -427,4 +418,52 @@ function addCursorCenteringListener(editor) {
       centerCursor(cm);
     }, 0);
   });
+}
+
+
+async function loadBuffersFromLocalStorage() {
+  const editorIds = JSON.parse(localStorage.getItem("editorIds")) || [];
+  console.log(editorIds);
+  if (editorIds.length === 0) {
+    tutorialText = `# Buffercanvas Tutorial: 
+
+### Keybinds 
+
+| Keybind                   | Action                                  |
+|---------------------------|-----------------------------------------|
+| ctrl + s                  | share                                   |
+| ctrl + l                  | pin language for buffer                 |
+| ctrl + c                  | copy current buffer to system clipboard |
+| ctrl + return             | new buffer                              |
+| backspace in empty buffer | deletes buffer                          |`;
+
+    addNewCodeBlock(null, tutorialText, "markdown");
+
+    mathDemo = `## math demo 
+
+$$
+\\forall n \\in \\mathbb{N}
+$$
+
+## mermaid 
+
+\`\`\`mermaid
+flowchart TB
+	A --> B
+	A --> C
+	D --> A
+    B --> A
+\`\`\` `;
+    addNewCodeBlock(null, mathDemo, "markdown");
+  } else {
+    for (const id of editorIds) {
+      try {
+        const response = await fetch(`/api/load/${id}`);
+        const code = await response.text();
+        addNewCodeBlock(id, code);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+  }
 }

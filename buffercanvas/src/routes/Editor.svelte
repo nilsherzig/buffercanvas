@@ -164,7 +164,7 @@
 		<div class="p-2 w-full md:w-2/5 shadow">
 			<MarkdownPreview bind:editorContent bind:uuid />
 		</div>
-		<div class="w-full md:w-3/5" id="editor-{uuid}"></div>
+		<div class="w-full pt-2 md:w-3/5" id="editor-{uuid}"></div>
 	</div>
 {:else}
 	<div class="my-2 m-2 rounded shadow bg-zinc-900">

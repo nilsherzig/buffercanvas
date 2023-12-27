@@ -3,11 +3,15 @@
 	import { marked } from 'marked';
 	import { tick } from 'svelte';
 	import mermaid from 'mermaid';
+	export let uuid: string;
+	import { debounce } from './debounce';
 
 	let htmlContent: string;
 	export let editorContent: string;
-	$: if (editorContent) updateHTML();
 
+	const debouncedUpdateHTML = debounce(updateHTML, 250);
+
+	$: if (editorContent) debouncedUpdateHTML();
 	async function updateHTML() {
 		if (editorContent && window.MathJax) {
 			const tempHtmlContent = marked.parse(editorContent);
@@ -18,8 +22,9 @@
 			await MathJax.typesetPromise().catch((err) => {
 				console.error('MathJax rendering error:', err);
 			});
-			const mermaidDiagrams = document.querySelectorAll('.language-mermaid'); // TODO regenerates entire site
-			mermaidDiagrams.forEach((diagram) => {
+			const proseElement = document.getElementById(`prose-${uuid}`);
+			const mermaidDiagrams = proseElement?.querySelectorAll('.language-mermaid'); // TODO regenerates entire site
+			mermaidDiagrams?.forEach((diagram) => {
 				mermaid.init(undefined, diagram);
 				console.log('rebuilding');
 			});
@@ -27,6 +32,6 @@
 	}
 </script>
 
-<article class="prose prose-sm" id="prose">
+<article class="rounded p-2 shadow bg-zinc-800 prose prose-invert" id="prose-{uuid}">
 	{@html htmlContent}
 </article>

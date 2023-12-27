@@ -14,9 +14,6 @@ export async function load({ fetch }) {
     return { item: null };
   }
   let posts: JsonSchema[] = await res.json();
-  console.log(posts)
-
-  posts = posts.slice(0, 6)
 
   return { posts };
 }

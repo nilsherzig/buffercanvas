@@ -69,7 +69,7 @@ func newBufferHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var codeData []CodeData
 
-		code := "## buffercanvas\n\n- [x] task 1\n\n### Keybinds \n\n| Keybind                   | Action                  |\n|---------------------------|-------------------------|\n| ctrl + s                  | share                   |\n| ctrl + l                  | pin language for buffer |\n| ctrl + return             | new buffer              |\n| backspace in empty buffer | deletes buffer          |\n\n### math \n\n$$\nx = \\frac{t}{3}\n$$\n\n### mermaid diagrams\n\n```mermaid\ngraph LR\nA --- B\nB-->C[fa:fa-ban forbidden]\nB-->D(fa:fa-spinner);\n```"
+		code := "# buffercanvas\n\n- [x] task 1\n\n## Keybinds \n\n| Keybind                   | Action                  |\n|---------------------------|-------------------------|\n| ctrl + s                  | share                   |\n| ctrl + l                  | pin language for buffer |\n| ctrl + return             | new buffer              |\n| backspace in empty buffer | deletes buffer          |\n\n### math \n\n$$\nx = \\frac{t}{3}\n$$\n\n### mermaid diagrams\n\n```mermaid\ngraph LR\nA --- B\nB-->C[fa:fa-ban forbidden]\nB-->D(fa:fa-spinner);\n```"
 
 		var example = CodeData{
 			UUID:     uuid.New(),
@@ -77,6 +77,11 @@ func newBufferHandler(db *sql.DB) http.HandlerFunc {
 			Language: "markdown",
 		}
 		codeData = append(codeData, example)
+		codeData = append(codeData, CodeData{
+			UUID:     uuid.New(),
+			Code:     "### Hallo was machen Sachen\n\nWas geht ab Berlin ",
+			Language: "markdown",
+		})
 		codeData = append(codeData, CodeData{
 			UUID: uuid.New(),
 			Code: `func newBufferHandler(db *sql.DB) http.HandlerFunc {

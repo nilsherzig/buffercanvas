@@ -28,7 +28,6 @@
 			newEditor?.focus();
 		}
 	}
-	console.log(data.posts);
 </script>
 
 <svelte:head>
@@ -48,7 +47,8 @@
 {/each}
 
 <style lang="postcss">
-	:global(html) {
-		background-color: theme(colors.zinc.100);
+	:global(html),
+	:global(body) {
+		background-color: theme(colors.zinc.950);
 	}
 </style>

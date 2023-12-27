@@ -11,6 +11,10 @@
 
 	const debouncedUpdateHTML = debounce(updateHTML, 250);
 
+	mermaid.initialize({
+		theme: 'dark'
+	});
+
 	$: if (editorContent) debouncedUpdateHTML();
 	async function updateHTML() {
 		if (editorContent && window.MathJax) {

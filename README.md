@@ -1,5 +1,8 @@
 # Buffer Canvas
 
+![Preview Small](./preview_small.png)
+![Preview Big](./preview_big.png)
+
 This project is very much work in progress!
 
 Live Demo: https://canvas.nilsherzig.com (read keybinds below)
